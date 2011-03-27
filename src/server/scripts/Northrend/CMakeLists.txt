@@ -1,5 +1,7 @@
 set(scripts_STAT_SRCS
   ${scripts_STAT_SRCS}
+  Northrend/teleNPC_vote.cpp
+  Northrend/teleNPCfun_vote.cpp
   Northrend/isle_of_conquest.cpp
   Northrend/storm_peaks.cpp
   Northrend/Ulduar/HallsOfLightning/instance_halls_of_lightning.cpp
@@ -34,6 +36,12 @@ set(scripts_STAT_SRCS
   Northrend/ObsidianSanctum/instance_obsidian_sanctum.cpp
   Northrend/ObsidianSanctum/obsidian_sanctum.h
   Northrend/ObsidianSanctum/boss_sartharion.cpp
+  Northrend/RubySanctum/boss_baltharus.cpp
+  Northrend/RubySanctum/boss_halion.cpp
+  Northrend/RubySanctum/boss_ragefire.cpp
+  Northrend/RubySanctum/boss_zarithrian.cpp
+  Northrend/RubySanctum/instance_ruby_sanctum.cpp
+  Northrend/RubySanctum/ruby_sanctum.h
   Northrend/FrozenHalls/HallsOfReflection/halls_of_reflection.h
   Northrend/FrozenHalls/HallsOfReflection/boss_falric.cpp
   Northrend/FrozenHalls/HallsOfReflection/instance_halls_of_reflection.cpp

@@ -197,7 +197,7 @@ bool ChatHandler::HandleGPSCommand(const char* args)
 }
 
 //Summon Player
-bool ChatHandler::HandleSummonCommand(const char* args)
+bool ChatHandler::HandleNameGoCommand(const char* args)
 {
     Player* target;
     uint64 target_guid;
@@ -312,7 +312,7 @@ bool ChatHandler::HandleSummonCommand(const char* args)
 }
 
 //Teleport to Player
-bool ChatHandler::HandleAppearCommand(const char* args)
+bool ChatHandler::HandleGoNameCommand(const char* args)
 {
     Player* target;
     uint64 target_guid;
@@ -748,7 +748,7 @@ bool ChatHandler::HandleSendMailCommand(const char* args)
 }
 
 //Summon group of player
-bool ChatHandler::HandleGroupSummonCommand(const char* args)
+bool ChatHandler::HandleGroupGoCommand(const char* args)
 {
     Player* target;
     if (!extractPlayerTarget((char*)args,&target))

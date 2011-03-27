@@ -16,6 +16,7 @@
  */
 
 #include "ScriptLoader.h"
+#include "AnticheatMgr.h"
 
 //examples
 void AddSC_example_creature();
@@ -43,6 +44,7 @@ void AddSC_example_spell_scripts();
 void AddSC_SmartSCripts();
 
 //Commands
+void AddSC_anticheat_commandscript();
 void AddSC_account_commandscript();
 void AddSC_achievement_commandscript();
 void AddSC_debug_commandscript();
@@ -345,6 +347,8 @@ void AddSC_ungoro_crater();
 void AddSC_winterspring();
 
 //northrend
+void AddSC_tele_npc_vote();
+void AddSC_tele_npc_fun_vote();
 void AddSC_boss_slad_ran();
 void AddSC_boss_moorabi();
 void AddSC_boss_drakkari_colossus();
@@ -479,6 +483,12 @@ void AddSC_icecrown_citadel_teleport();
 void AddSC_instance_icecrown_citadel();
 void AddSC_icecrown_citadel();
 
+void AddSC_instance_ruby_sanctum();	// Ruby Sanctum
+void AddSC_boss_zarithrian();
+void AddSC_boss_ragefire();
+void AddSC_boss_halion();
+void AddSC_boss_baltharus();
+
 void AddSC_dalaran();
 void AddSC_borean_tundra();
 void AddSC_dragonblight();
@@ -594,6 +604,7 @@ void AddScripts()
     AddSpellScripts();
     AddSC_SmartSCripts();
     AddCommandScripts();
+    sAnticheatMgr->StartScripts();
 #ifdef SCRIPTS
     AddWorldScripts();
     AddEasternKingdomsScripts();
@@ -635,6 +646,7 @@ void AddSpellScripts()
 
 void AddCommandScripts()
 {
+    AddSC_anticheat_commandscript();
     AddSC_account_commandscript();
     AddSC_achievement_commandscript();
     AddSC_debug_commandscript();
@@ -1038,6 +1050,8 @@ void AddOutlandScripts()
 void AddNorthrendScripts()
 {
 #ifdef SCRIPTS
+	AddSC_tele_npc_vote();
+	AddSC_tele_npc_fun_vote();
     AddSC_boss_slad_ran();               //Gundrak
     AddSC_boss_moorabi();
     AddSC_boss_drakkari_colossus();
@@ -1171,6 +1185,12 @@ void AddNorthrendScripts()
     AddSC_icecrown_citadel_teleport();
     AddSC_instance_icecrown_citadel();
     AddSC_icecrown_citadel();
+
+	AddSC_instance_ruby_sanctum();	// Ruby Sanctum
+	AddSC_boss_zarithrian();
+	AddSC_boss_ragefire();
+	AddSC_boss_halion();
+	AddSC_boss_baltharus();
 
     AddSC_dalaran();
     AddSC_borean_tundra();

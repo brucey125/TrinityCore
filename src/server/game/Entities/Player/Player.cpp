@@ -16,6 +16,7 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "AnticheatMgr.h"
 #include "Common.h"
 #include "Language.h"
 #include "DatabaseEnv.h"
@@ -1468,6 +1469,8 @@ void Player::Update(uint32 p_time)
     if (!IsInWorld())
         return;
 
+    //sAnticheatMgr->HandleHackDetectionTimer(this, p_time);
+
     // undelivered mail
     if (m_nextMailDelivereTime && m_nextMailDelivereTime <= time(NULL))
     {
@@ -2064,6 +2067,8 @@ void Player::TeleportOutOfMap(Map *oldMap)
 
 bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientation, uint32 options)
 {
+    //sAnticheatMgr->DisableAnticheatDetection(this,true);
+
     if (!MapManager::IsValidMapCoord(mapid, x, y, z, orientation))
     {
         sLog->outError("TeleportTo: invalid map (%d) or invalid coordinates (X: %f, Y: %f, Z: %f, O: %f) given when teleporting player (GUID: %u, name: %s, map: %d, X: %f, Y: %f, Z: %f, O: %f).",
@@ -2181,6 +2186,33 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
     {
         if (getClass() == CLASS_DEATH_KNIGHT && GetMapId() == 609 && !isGameMaster() && !HasSpell(50977))
             return false;
+
+		//guild house phase change
+        if (mapid == 37)
+        {
+            if (GetGuildId() > 0 || isGameMaster())
+            {
+                uint32 guildphasemask = GetGuildHouseMask();
+                if (!isGameMaster() && guildphasemask > 1) //players with gh guilds
+                    SetPhaseMask(guildphasemask, true);
+                else if (isGameMaster()) //gms see all
+                    SetPhaseMask(-1, true);
+                else //player with guild but no gh entry
+                {
+                    ChatHandler(this).PSendSysMessage(LANG_NO_GUILD_HOUSE);
+                    return false;
+                }
+            }
+            else
+            {
+                ChatHandler(this).PSendSysMessage(LANG_NO_GUILD_HOUSE);
+                return false;
+            }
+        }
+        if (GetMapId() == 37 && mapid != 37) //set phase to 1 for people who are teleporting out of the gh
+        {
+            SetPhaseMask(1, true);
+        }
 
         // far teleport to another map
         Map* oldmap = IsInWorld() ? GetMap() : NULL;
@@ -18337,6 +18369,12 @@ void Player::SaveToDB()
 
     CharacterDatabase.CommitTransaction(trans);
 
+    // we save the data here to prevent spamming
+    sAnticheatMgr->SavePlayerData(this);
+
+    // in this way we prevent to spam the db by each report made!
+    // sAnticheatMgr->SavePlayerData(this);
+
     // save pet (hunter pet level and experience and all type pets health/mana).
     if (Pet* pet = GetPet())
         pet->SavePetToDB(PET_SAVE_AS_CURRENT);
@@ -24530,6 +24568,174 @@ void Player::RefundItem(Item *item)
     if (uint32 arenaRefund = iece->reqarenapoints)
         ModifyArenaPoints(arenaRefund);
 
+}
+
+/**********************************************************/
+/***                VOTE SYSTEM                         ***/
+/**********************************************************/
+
+int32 Player::GetVotePoints()
+{
+    QueryResult resultVP = LoginDatabase.PQuery("SELECT `points` FROM `voting_points` WHERE `id` = '%u';", GetSession()->GetAccountId());
+    if (resultVP)
+    {
+        Field *fields = resultVP->Fetch();
+        uint32 points = fields[0].GetUInt32();
+        return points;
+    }
+    else
+    {
+        return -1;
+    }
+}
+
+void Player::InstanceReset()
+{
+	if (GetSession()->GetSecurity() < 3)
+	{
+		ChatHandler(this).PSendSysMessage("|cffffcc00[You are not a level 3 GM]|r|cff00ff00 Please contact an admin to reset the instances.|r");
+	}
+	else
+	{
+		CharacterDatabase.PExecute("DELETE FROM `character_instance`;");
+		ChatHandler(this).PSendSysMessage("Instances have been reset.");
+	}
+}
+
+void Player::ModVotePoints(int32 amnt, bool IsRequired)
+{
+    int32 cur_points = GetVotePoints();
+    uint32 newpoints;
+
+    newpoints = cur_points + amnt;
+
+    if (cur_points == -1)
+    {
+        ChatHandler(this).PSendSysMessage("|cffffcc00[Vote Manager]|r|cff00ff00 It appears you have not voted for us before. You must vote at least once to use this utility.|r");
+        return;
+    }    
+    if (amnt < 0 && cur_points < (amnt * -1))
+    {
+        if (IsRequired == true)
+        {
+            ChatHandler(this).PSendSysMessage("|cffffcc00[Vote Manager]|r|cffff0000 You do not have enough Vote Points to use this utility.|r");
+            return;
+        }
+        else
+            newpoints = 0;
+    }
+
+    ChatHandler(this).PSendSysMessage("|cffffcc00[Vote Manager]|r|cff00ff00 You now have %u Vote Points.|r", newpoints);
+    LoginDatabase.PExecute("UPDATE `voting_points` SET `points` = '%u' WHERE `id` = '%u';", newpoints, GetSession()->GetAccountId());
+}
+
+bool Player::HasVoted()
+{
+    time_t seconds = time (NULL);
+    uint32 votetime = seconds - 43200; //cur time - 12 hours
+
+    QueryResult ipResult = LoginDatabase.PQuery("SELECT * FROM `voting` WHERE `user_ip` = '%s' AND `time` > '%u';", GetSession()->GetRemoteAddress().c_str(), votetime);
+    QueryResult accResult = LoginDatabase.PQuery("SELECT * FROM `voting_points` WHERE `id` = '%u' AND `time` > '%u';", GetSession()->GetAccountId(), votetime);
+
+    if (ipResult || accResult)
+        return true;
+    else
+        return false;
+}
+void Player::UnbindAllInst()
+{
+    if (GetVotePoints() < 2)
+    {
+        ChatHandler(this).PSendSysMessage("|cffffcc00[Vote Manager]|r|cffff0000 You do not have enough Vote Points to use this utility.|r");
+        return;
+    }
+    uint32 counter = 0;
+    for (uint8 i = 0; i < MAX_DIFFICULTY; ++i)
+    {
+        Player::BoundInstancesMap &binds = GetBoundInstances(Difficulty(i));
+        for (Player::BoundInstancesMap::iterator itr = binds.begin(); itr != binds.end();)
+        {
+            if (itr->first != GetMapId())
+            {
+                InstanceSave *save = itr->second.save;
+                UnbindInstance(itr, Difficulty(i));
+                counter++;
+            }
+            else
+                ++itr;
+        }
+    }
+    if (counter != 0)
+    {
+        ChatHandler(this).PSendSysMessage("All (%d) of your instances have been reset!", counter);
+        ModVotePoints(-2, true);
+    }
+    else
+        ChatHandler(this).PSendSysMessage("You do not have any instance bindings to reset.");
+}
+
+bool Player::AddItemVS(uint32 itemId, uint32 count, bool OverflowMail)
+{
+    //if count 0 or less then it wont add anyway
+    if (count <= 0)
+        return false;
+
+    //dont add an item that doesnt exist
+    ItemPrototype const *pProto = sObjectMgr->GetItemPrototype(itemId);
+    if(!pProto)
+        return false;
+
+    uint32 noSpaceForCount = 0;
+
+    // check space and find places
+    ItemPosCountVec dest;
+    uint8 msg = CanStoreNewItem( NULL_BAG, NULL_SLOT, dest, itemId, count, &noSpaceForCount );
+    if (msg != EQUIP_ERR_OK)                               // convert to possible store amount
+        count -= noSpaceForCount;
+
+    Item* item = StoreNewItem( dest, itemId, true, Item::GenerateItemRandomPropertyId(itemId));
+
+    if (count > 0 && item)
+        SendNewItem(item,count,true,false);
+
+    if (noSpaceForCount > 0)
+    {
+        if (OverflowMail == true)
+        {
+            //todo: send to mail
+            return true;
+        }
+        else
+        {
+            ChatHandler(this).PSendSysMessage(LANG_ITEM_CANNOT_CREATE, itemId, noSpaceForCount);
+            return false;
+        }
+    }
+    return false;
+}
+
+uint32 Player::GetGuildHouseMask()
+{
+    //if count 0 or less then it wont add anyway
+    if (GetGuildId() < 1)
+        return 1;
+
+	QueryResult result = CharacterDatabase.PQuery("SELECT `phasemask` FROM `guild_house_masks` WHERE `guid` = '%u';", GetGuildId());
+	if (result)
+	{
+		Field *fields = result->Fetch();
+		uint64 phaseid = fields[0].GetUInt64();
+		uint64 phasemask = 2;
+		for (uint32 i = 0; i < phaseid; i++)
+		{
+			if (phaseid == 1)
+				phasemask = 1;
+			else
+				phasemask *= 2;
+		}
+		return phasemask;
+	}
+	return 1;
 }
 
 void Player::SetRandomWinner(bool isWinner)

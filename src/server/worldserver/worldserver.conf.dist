@@ -1299,6 +1299,21 @@ MaxRecruitAFriendBonusDistance = 100
 MailDeliveryDelay = 3600
 
 #
+#	 ExternalMail
+#		 Enable external mail deliver from mail_external table.
+#		 Default: 0 (disabled)
+#				  1 (enabled)
+
+ExternalMail = 0
+
+#
+#	 ExternalMailInterval
+#		 Mail delivery delay time for item sending from mail_external table, in minutes.
+#		 Default: 1 minute 
+
+ExternalMailInterval = 1
+
+#
 #    SkillChance.Prospecting
 #        Description: Allow skill increase from prospecting.
 #        Default:     0 - (Disabled)
@@ -2768,4 +2783,32 @@ LevelReq.Auction = 1
 LevelReq.Mail = 1
 
 #
+
+#     Anticheat.Enable
+#        Description: Enables or disables the Anticheat System functionality
+#        Default:     1 - (Enabled)
+#                     0 - (Disabled)  
+
+Anticheat.Enable = 1
+
+#     Anticheat.ReportsForIngameWarnings
+#        Description: How many reports the player must have to notify to GameMasters ingame when he generates a new report.
+#        Default:     70
+
+Anticheat.ReportsForIngameWarnings = 70
+      
+#     Anticheat.DetectionsEnabled
+#        Description: It represents which detections are enabled.
+#    
+#        SPEED_HACK_DETECTION            = 1
+#        FLY_HACK_DETECTION              = 2
+#        WALK_WATER_HACK_DETECTION       = 4
+#        JUMP_HACK_DETECTION             = 8
+#        TELEPORT_PLANE_HACK_DETECTION   = 16
+#        CLIMB_HACK_DETECTION            = 32
+#
+#        Default:     31
+
+Anticheat.DetectionsEnabled = 31
+
 ###################################################################################################
