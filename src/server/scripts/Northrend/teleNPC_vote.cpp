@@ -205,7 +205,7 @@ public:
 		pPlayer->SEND_GOSSIP_MENU(DEFAULT_GOSSIP_MESSAGE,pCreature->GetGUID());
 	break;
 
-	case 5030: //Northrend	
+	case 5030: //Northrend 1
 		pPlayer->ADD_GOSSIP_ITEM( 5, "Ahn'Kahet"                        , GOSSIP_SENDER_MAIN, 9001);
 		pPlayer->ADD_GOSSIP_ITEM( 5, "Azjol-Nerub"                      , GOSSIP_SENDER_MAIN, 9005);
 		pPlayer->ADD_GOSSIP_ITEM( 5, "Drak'Tharon Keep"                 , GOSSIP_SENDER_MAIN, 9010);
@@ -214,12 +214,21 @@ public:
 		pPlayer->ADD_GOSSIP_ITEM( 5, "Naxxramas"                        , GOSSIP_SENDER_MAIN, 9025);
 		pPlayer->ADD_GOSSIP_ITEM( 5, "The Nexus"                        , GOSSIP_SENDER_MAIN, 9030);
 		pPlayer->ADD_GOSSIP_ITEM( 5, "The Obsidian Sanctum"             , GOSSIP_SENDER_MAIN, 9035);
+		pPlayer->ADD_GOSSIP_ITEM( 7, "More ->"							, GOSSIP_SENDER_MAIN, 5035);
+		pPlayer->ADD_GOSSIP_ITEM( 7, "<- Back"                          , GOSSIP_SENDER_MAIN, 5000);
+    
+		pPlayer->SEND_GOSSIP_MENU(DEFAULT_GOSSIP_MESSAGE,pCreature->GetGUID());
+	break;
+
+	case 5035: //Northrend 2
+		pPlayer->ADD_GOSSIP_ITEM( 5, "Trial of the Crusader"			, GOSSIP_SENDER_MAIN, 9065);
 		pPlayer->ADD_GOSSIP_ITEM( 5, "Utgarde Keep"                     , GOSSIP_SENDER_MAIN, 9040);
 		pPlayer->ADD_GOSSIP_ITEM( 5, "Utgarde Pinnacle"                 , GOSSIP_SENDER_MAIN, 9045);
 		pPlayer->ADD_GOSSIP_ITEM( 5, "Ulduar"                           , GOSSIP_SENDER_MAIN, 9050);
 		pPlayer->ADD_GOSSIP_ITEM( 5, "Violet Hold"                      , GOSSIP_SENDER_MAIN, 9055);
 		pPlayer->ADD_GOSSIP_ITEM( 5, "Vault of Archavon"                , GOSSIP_SENDER_MAIN, 9060);
-		pPlayer->ADD_GOSSIP_ITEM( 7, "<- Back"                          , GOSSIP_SENDER_MAIN, 5000);
+		pPlayer->ADD_GOSSIP_ITEM( 7, "<- Back"                          , GOSSIP_SENDER_MAIN, 5030);
+		pPlayer->ADD_GOSSIP_ITEM( 7, "<- Main Menu"                     , GOSSIP_SENDER_MAIN, 5005);
     
 		pPlayer->SEND_GOSSIP_MENU(DEFAULT_GOSSIP_MESSAGE,pCreature->GetGUID());
 	break;
@@ -649,6 +658,11 @@ public:
 		pPlayer->CLOSE_GOSSIP_MENU();
 		pPlayer->TeleportTo(571, 5440.11f, 2840.76f, 420.42f, 0.01f);
     
+	break;
+
+	case 9065:// Trial of the Crusader
+		pPlayer->CLOSE_GOSSIP_MENU();
+		pPlayer->TeleportTo(571, 8515.93f, 638.41f, 547.32f, 1.55f);
 	break;
 
 	//////////////////////////////////////////Player Tools////////////////////////////////////////////////////////
