@@ -69,8 +69,6 @@ enum ShutdownExitCode
 /// Timers for different object refresh rates
 enum WorldTimers
 {
-    WUPDATE_OBJECTS,
-    WUPDATE_SESSIONS,
     WUPDATE_AUCTIONS,
     WUPDATE_WEATHERS,
     WUPDATE_UPTIME,
@@ -780,7 +778,6 @@ class World
         uint32 m_updateTimeCount;
         uint32 m_currentTime;
 
-        //typedef UNORDERED_MAP<uint32, WorldSession*> SessionMap;
         SessionMap m_sessions;
         typedef UNORDERED_MAP<uint32, time_t> DisconnectMap;
         DisconnectMap m_disconnects;
